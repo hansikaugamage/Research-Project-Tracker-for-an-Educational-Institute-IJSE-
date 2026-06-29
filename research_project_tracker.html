@@ -1,0 +1,656 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--sidebar-bg:#0f172a;--sidebar-text:#94a3b8;--sidebar-hover:#1e293b;--sidebar-active:#1e40af;--header-bg:#ffffff;--content-bg:#f8fafc;--card-bg:#ffffff;--text-1:#0f172a;--text-2:#475569;--text-3:#94a3b8;--border:#e2e8f0;--success:#16a34a;--warning:#d97706;--danger:#dc2626;--radius:8px;--font:'Inter',system-ui,sans-serif}
+body{font-family:var(--font);background:var(--content-bg);color:var(--text-1);font-size:14px;line-height:1.5}
+.app{display:flex;min-height:600px;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--content-bg)}
+.sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s}
+.sidebar.collapsed{width:52px}
+.sidebar-logo{padding:16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e293b}
+.logo-icon{width:28px;height:28px;background:var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.logo-text{color:#fff;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden}
+.sidebar-section{padding:10px 0}
+.sidebar-label{padding:4px 14px 4px;font-size:10px;font-weight:600;letter-spacing:.08em;color:#4b5563;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;color:var(--sidebar-text);transition:.15s;border-left:3px solid transparent;white-space:nowrap}
+.nav-item:hover{background:var(--sidebar-hover);color:#e2e8f0}
+.nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:#60a5fa}
+.nav-item i{font-size:16px;flex-shrink:0;width:18px}
+.nav-label{font-size:13px;overflow:hidden}
+.sidebar-bottom{margin-top:auto;padding:12px 0;border-top:1px solid #1e293b}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer}
+.avatar{width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-info{overflow:hidden}
+.user-name{color:#e2e8f0;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{color:#64748b;font-size:10px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header-title{font-size:16px;font-weight:600;color:var(--text-1);flex:1}
+.header-search{flex:1;max-width:280px;position:relative}
+.header-search input{width:100%;padding:6px 10px 6px 32px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:#f8fafc;outline:none;color:var(--text-1)}
+.header-search i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:#fff;color:var(--text-1);border:1px solid var(--border)}
+.btn-secondary:hover{background:#f8fafc}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:5px 10px;font-size:12px}
+.content{flex:1;padding:20px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.page-title{font-size:20px;font-weight:700;color:var(--text-1)}
+.page-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card-bg);border:0.5px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:11px;color:var(--text-3);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.stat-value{font-size:24px;font-weight:700;color:var(--text-1);margin:4px 0 2px}
+.stat-change{font-size:11px;color:var(--success)}
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:var(--card-bg);border:0.5px solid var(--border);border-radius:12px;padding:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:600;color:var(--text-1)}
+.project-list{display:flex;flex-direction:column;gap:8px}
+.project-item{padding:10px 12px;background:#f8fafc;border-radius:8px;border:0.5px solid var(--border)}
+.project-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.project-name{font-size:13px;font-weight:500;color:var(--text-1);cursor:pointer}
+.project-name:hover{color:var(--primary)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.04em}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-purple{background:#f3e8ff;color:#7e22ce}
+.progress-bar{height:4px;background:#e2e8f0;border-radius:2px;margin-top:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .3s}
+.progress-fill.blue{background:var(--primary)}
+.progress-fill.green{background:var(--success)}
+.progress-fill.amber{background:var(--warning)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:#f8fafc}
+td{padding:10px 12px;border-bottom:0.5px solid var(--border);color:var(--text-1);vertical-align:middle}
+tr:hover td{background:#fafafa}
+.modal-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;border-radius:12px}
+.modal{background:#fff;border-radius:12px;width:440px;max-width:90%;max-height:80%;overflow-y:auto}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:600}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.form-group{margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:5px}
+input[type=text],input[type=email],input[type=password],input[type=date],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;color:var(--text-1);background:#fff;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+textarea{resize:vertical;min-height:70px}
+.auth-page{min-height:600px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%)}
+.auth-card{background:#fff;border-radius:16px;width:360px;padding:32px}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;justify-content:center}
+.auth-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--text-2);text-align:center;margin-bottom:24px}
+.auth-link{color:var(--primary);cursor:pointer;font-size:13px}
+.auth-bottom{text-align:center;margin-top:16px;font-size:13px;color:var(--text-2)}
+.error-msg{background:#fee2e2;color:#b91c1c;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px}
+.success-msg{background:#dcfce7;color:#15803d;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px}
+.toast{position:absolute;top:16px;right:16px;background:#1e293b;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:200;display:flex;align-items:center;gap:8px;opacity:0;transition:.3s}
+.toast.show{opacity:1}
+.detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.detail-main{display:flex;flex-direction:column;gap:12px}
+.detail-side{display:flex;flex-direction:column;gap:12px}
+.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.info-row:last-child{border:none}
+.info-label{color:var(--text-2)}
+.milestone-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:8px;margin-bottom:6px}
+.milestone-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.milestone-check.done{background:var(--success);border-color:var(--success)}
+.milestone-check.done i{color:#fff;font-size:10px}
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:8px;margin-bottom:6px}
+.doc-icon{width:32px;height:32px;border-radius:6px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.doc-icon i{color:#2563eb;font-size:16px}
+.tag{display:inline-flex;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.chip-blue{background:#dbeafe;color:#1d4ed8}
+.chip-amber{background:#fef3c7;color:#92400e}
+.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.action-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:5px;font-size:11px;cursor:pointer;border:none;background:transparent;color:var(--text-2)}
+.action-btn:hover{background:#f1f5f9;color:var(--text-1)}
+.action-btn.del:hover{color:var(--danger)}
+.section-divider{height:1px;background:var(--border);margin:16px 0}
+.empty-state{text-align:center;padding:32px;color:var(--text-3)}
+.empty-state i{font-size:32px;margin-bottom:8px;display:block}
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:.15s}
+.upload-zone:hover{border-color:var(--primary);background:#eff6ff}
+.role-badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.06em}
+.role-admin{background:#f3e8ff;color:#7e22ce}
+.role-supervisor{background:#dbeafe;color:#1d4ed8}
+.role-researcher{background:#dcfce7;color:#15803d}
+.notifications{position:absolute;top:52px;right:60px;background:#fff;border:0.5px solid var(--border);border-radius:12px;width:300px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.notif-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.notif-item{padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer}
+.notif-item:hover{background:#f8fafc}
+.notif-title{font-size:12px;font-weight:500}
+.notif-time{font-size:11px;color:var(--text-3)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--primary);display:inline-block;margin-right:6px}
+</style>
+
+<h2 class="sr-only">Research Project Tracker — interactive SPA simulation</h2>
+<div style="position:relative;min-height:600px" id="root">
+
+<div id="auth-screen">
+<div class="auth-page" style="min-height:600px;border-radius:12px">
+<div class="auth-card">
+<div class="auth-logo">
+<div class="logo-icon">RT</div>
+<span style="font-size:16px;font-weight:700">ResearchTrack</span>
+</div>
+<div id="auth-error" class="error-msg" style="display:none"></div>
+<div id="login-form">
+<div class="auth-title">Sign in</div>
+<div class="auth-sub">Access your research dashboard</div>
+<div class="form-group">
+<label>Email address</label>
+<input type="email" id="login-email" placeholder="you@institution.edu" value="admin@uni.edu">
+</div>
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="login-password" placeholder="••••••••" value="password123">
+</div>
+<div style="margin-bottom:14px">
+<select id="login-role">
+<option value="ADMIN">Admin</option>
+<option value="SUPERVISOR">Supervisor</option>
+<option value="RESEARCHER">Researcher</option>
+</select>
+</div>
+<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">
+<span id="login-btn-text">Sign in</span>
+</button>
+<div class="auth-bottom">No account? <span class="auth-link" onclick="toggleAuth('register')">Create one</span></div>
+</div>
+<div id="register-form" style="display:none">
+<div class="auth-title">Create account</div>
+<div class="auth-sub">Join your institution's research platform</div>
+<div class="form-group"><label>Full name</label><input type="text" placeholder="Dr. Jane Smith"></div>
+<div class="form-group"><label>Email</label><input type="email" placeholder="you@institution.edu"></div>
+<div class="form-group"><label>Password</label><input type="password" placeholder="Min. 8 characters"></div>
+<div class="form-group"><label>Confirm password</label><input type="password" placeholder="Re-enter password"></div>
+<div class="form-group"><label>Role</label><select><option>Researcher</option><option>Supervisor</option></select></div>
+<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doRegister()">Create account</button>
+<div class="auth-bottom">Already have an account? <span class="auth-link" onclick="toggleAuth('login')">Sign in</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="main-app" style="display:none">
+<div class="app">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-logo">
+<div class="logo-icon">RT</div>
+<span class="logo-text">ResearchTrack</span>
+</div>
+<div class="sidebar-section">
+<div class="sidebar-label">Main</div>
+<div class="nav-item active" onclick="nav('dashboard',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span class="nav-label">Dashboard</span></div>
+<div class="nav-item" onclick="nav('projects',this)"><i class="ti ti-folder" aria-hidden="true"></i><span class="nav-label">Projects</span></div>
+<div class="nav-item" onclick="nav('milestones',this)"><i class="ti ti-checkbox" aria-hidden="true"></i><span class="nav-label">Milestones</span></div>
+<div class="nav-item" onclick="nav('documents',this)"><i class="ti ti-file" aria-hidden="true"></i><span class="nav-label">Documents</span></div>
+</div>
+<div class="sidebar-section" id="admin-nav" style="display:none">
+<div class="sidebar-label">Admin</div>
+<div class="nav-item" onclick="nav('admin',this)"><i class="ti ti-shield" aria-hidden="true"></i><span class="nav-label">Admin Panel</span></div>
+</div>
+<div class="sidebar-bottom">
+<div class="user-chip">
+<div class="avatar" id="user-avatar">AD</div>
+<div class="user-info">
+<div class="user-name" id="user-display">Admin User</div>
+<div class="user-role" id="user-role-display">Administrator</div>
+</div>
+</div>
+<div class="nav-item" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i><span class="nav-label">Sign out</span></div>
+</div>
+</div>
+
+<div class="main">
+<div class="header">
+<button class="btn btn-secondary btn-sm" style="padding:5px 8px" onclick="toggleSidebar()"><i class="ti ti-menu-2" aria-hidden="true"></i></button>
+<div class="header-title" id="header-title">Dashboard</div>
+<div class="header-search">
+<i class="ti ti-search" aria-hidden="true"></i>
+<input type="text" placeholder="Search projects, milestones…">
+</div>
+<button class="btn btn-secondary btn-sm" onclick="toggleNotif()" style="position:relative">
+<i class="ti ti-bell" aria-hidden="true"></i>
+<span style="position:absolute;top:4px;right:4px;width:6px;height:6px;background:var(--danger);border-radius:50%"></span>
+</button>
+<div id="notif-panel" class="notifications" style="display:none">
+<div class="notif-header">Notifications</div>
+<div class="notif-item"><div class="notif-title"><span class="dot"></span>Milestone "Data Collection" marked complete</div><div class="notif-time">2 min ago</div></div>
+<div class="notif-item"><div class="notif-title"><span class="dot"></span>New document uploaded to Climate Study</div><div class="notif-time">1 hr ago</div></div>
+<div class="notif-item"><div class="notif-title">Project "AI Ethics" status changed to Active</div><div class="notif-time">Yesterday</div></div>
+</div>
+</div>
+
+<div class="content" id="content-area">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="page-header">
+<div><div class="page-title">Dashboard</div><div class="page-sub">Welcome back! Here's an overview of your research activity.</div></div>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Total Projects</div><div class="stat-value">12</div><div class="stat-change">↑ 2 this month</div></div>
+<div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value">7</div><div class="stat-change">↑ 1 this week</div></div>
+<div class="stat-card"><div class="stat-label">Milestones Done</div><div class="stat-value">34</div><div class="stat-change">↑ 5 this week</div></div>
+<div class="stat-card"><div class="stat-label">Documents</div><div class="stat-value">89</div><div class="stat-change">↑ 12 this month</div></div>
+</div>
+<div class="cards-grid">
+<div class="card">
+<div class="card-header"><span class="card-title">Recent Projects</span><button class="btn btn-secondary btn-sm" onclick="nav('projects',null)">View all</button></div>
+<div class="project-list">
+<div class="project-item">
+<div class="project-item-header"><span class="project-name" onclick="showProjectDetail()">Climate Change Impact Study</span><span class="badge badge-green">Active</span></div>
+<div style="font-size:11px;color:var(--text-3)">Dr. Sarah Chen — Due Dec 2025</div>
+<div class="progress-bar"><div class="progress-fill blue" style="width:68%"></div></div>
+<div style="font-size:10px;color:var(--text-3);margin-top:3px">68% complete</div>
+</div>
+<div class="project-item">
+<div class="project-item-header"><span class="project-name">AI Ethics in Healthcare</span><span class="badge badge-amber">In Review</span></div>
+<div style="font-size:11px;color:var(--text-3)">Prof. James Wu — Due Mar 2026</div>
+<div class="progress-bar"><div class="progress-fill amber" style="width:45%"></div></div>
+<div style="font-size:10px;color:var(--text-3);margin-top:3px">45% complete</div>
+</div>
+<div class="project-item">
+<div class="project-item-header"><span class="project-name">Quantum Computing Applications</span><span class="badge badge-blue">Planning</span></div>
+<div style="font-size:11px;color:var(--text-3)">Dr. Alicia Park — Due Jul 2026</div>
+<div class="progress-bar"><div class="progress-fill blue" style="width:22%"></div></div>
+<div style="font-size:10px;color:var(--text-3);margin-top:3px">22% complete</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="card-title">Upcoming Milestones</span><button class="btn btn-secondary btn-sm" onclick="nav('milestones',null)">View all</button></div>
+<div>
+<div class="milestone-item"><div class="milestone-check done"><i class="ti ti-check" aria-hidden="true"></i></div><div><div style="font-size:13px;font-weight:500">Literature Review Complete</div><div style="font-size:11px;color:var(--text-3)">Climate Study — Completed</div></div></div>
+<div class="milestone-item"><div class="milestone-check"></div><div><div style="font-size:13px;font-weight:500">Survey Data Collection</div><div style="font-size:11px;color:var(--text-3)">Climate Study — Due Jul 30</div></div></div>
+<div class="milestone-item"><div class="milestone-check"></div><div><div style="font-size:13px;font-weight:500">Ethics Board Approval</div><div style="font-size:11px;color:var(--text-3)">AI Ethics — Due Aug 15</div></div></div>
+<div class="milestone-item"><div class="milestone-check done"><i class="ti ti-check" aria-hidden="true"></i></div><div><div style="font-size:13px;font-weight:500">Project Proposal Submitted</div><div style="font-size:11px;color:var(--text-3)">Quantum Computing — Completed</div></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PROJECTS -->
+<div class="page" id="page-projects">
+<div class="page-header">
+<div><div class="page-title">Projects</div><div class="page-sub">Manage all research projects.</div></div>
+<button class="btn btn-primary" onclick="openModal('project-modal')"><i class="ti ti-plus" aria-hidden="true"></i>New project</button>
+</div>
+<div class="card" style="margin-bottom:12px">
+<div style="display:flex;gap:8px;align-items:center">
+<select style="width:auto" onchange="filterProjects(this.value)"><option value="">All statuses</option><option>Active</option><option>Planning</option><option>In Review</option><option>Completed</option></select>
+<select style="width:auto"><option>All supervisors</option><option>Dr. Sarah Chen</option><option>Prof. James Wu</option><option>Dr. Alicia Park</option></select>
+<input type="text" placeholder="Search…" style="flex:1">
+</div>
+</div>
+<div class="card">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Project</th><th>Supervisor</th><th>Status</th><th>Progress</th><th>Due</th><th>Actions</th></tr></thead>
+<tbody id="projects-tbody">
+<tr><td><span class="project-name" onclick="showProjectDetail()">Climate Change Impact Study</span><div style="font-size:11px;color:var(--text-3)">ENV-2024-001</div></td><td>Dr. Sarah Chen</td><td><span class="badge badge-green">Active</span></td><td><div class="progress-bar" style="width:80px"><div class="progress-fill green" style="width:68%"></div></div><span style="font-size:11px;color:var(--text-3);margin-left:4px">68%</span></td><td style="font-size:12px">Dec 2025</td><td><button class="action-btn" onclick="openEditModal()"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button><button class="action-btn del" onclick="confirmDelete()"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><span class="project-name">AI Ethics in Healthcare</span><div style="font-size:11px;color:var(--text-3)">CS-2024-007</div></td><td>Prof. James Wu</td><td><span class="badge badge-amber">In Review</span></td><td><div class="progress-bar" style="width:80px"><div class="progress-fill amber" style="width:45%"></div></div><span style="font-size:11px;color:var(--text-3);margin-left:4px">45%</span></td><td style="font-size:12px">Mar 2026</td><td><button class="action-btn" onclick="openEditModal()"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button><button class="action-btn del" onclick="confirmDelete()"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><span class="project-name">Quantum Computing Applications</span><div style="font-size:11px;color:var(--text-3)">PHY-2025-003</div></td><td>Dr. Alicia Park</td><td><span class="badge badge-blue">Planning</span></td><td><div class="progress-bar" style="width:80px"><div class="progress-fill blue" style="width:22%"></div></div><span style="font-size:11px;color:var(--text-3);margin-left:4px">22%</span></td><td style="font-size:12px">Jul 2026</td><td><button class="action-btn" onclick="openEditModal()"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button><button class="action-btn del" onclick="confirmDelete()"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><span class="project-name">Biodiversity in Urban Areas</span><div style="font-size:11px;color:var(--text-3)">BIO-2024-012</div></td><td>Dr. Marcus Lee</td><td><span class="badge badge-green">Active</span></td><td><div class="progress-bar" style="width:80px"><div class="progress-fill green" style="width:82%"></div></div><span style="font-size:11px;color:var(--text-3);margin-left:4px">82%</span></td><td style="font-size:12px">Oct 2025</td><td><button class="action-btn" onclick="openEditModal()"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button><button class="action-btn del" onclick="confirmDelete()"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><span class="project-name">Neural Network Optimization</span><div style="font-size:11px;color:var(--text-3)">CS-2025-002</div></td><td>Prof. Yuki Tanaka</td><td><span class="badge badge-gray">Completed</span></td><td><div class="progress-bar" style="width:80px"><div class="progress-fill green" style="width:100%"></div></div><span style="font-size:11px;color:var(--text-3);margin-left:4px">100%</span></td><td style="font-size:12px">Jan 2025</td><td><button class="action-btn"><i class="ti ti-eye" aria-hidden="true"></i>View</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- PROJECT DETAIL -->
+<div class="page" id="page-project-detail">
+<div class="page-header">
+<div>
+<button class="btn btn-secondary btn-sm" onclick="nav('projects',null)" style="margin-bottom:8px"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back</button>
+<div class="page-title">Climate Change Impact Study</div>
+<div style="display:flex;gap:8px;margin-top:6px;align-items:center"><span class="badge badge-green">Active</span><span class="tag">ENV-2024-001</span><span class="tag">Environmental Science</span></div>
+</div>
+<div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="openEditModal()"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button><button class="btn btn-primary"><i class="ti ti-upload" aria-hidden="true"></i>Upload doc</button></div>
+</div>
+<div class="detail-grid">
+<div class="detail-main">
+<div class="card">
+<div class="card-header"><span class="card-title">Overview</span></div>
+<p style="font-size:13px;color:var(--text-2);margin-bottom:12px">A comprehensive study examining the impact of climate change on agricultural yields in Southeast Asian regions over a 5-year period. This research combines satellite data analysis with field studies.</p>
+<div class="info-row"><span class="info-label">Supervisor</span><span>Dr. Sarah Chen</span></div>
+<div class="info-row"><span class="info-label">Start date</span><span>Jan 15, 2024</span></div>
+<div class="info-row"><span class="info-label">End date</span><span>Dec 31, 2025</span></div>
+<div class="info-row"><span class="info-label">Funding</span><span>$285,000</span></div>
+<div class="info-row"><span class="info-label">Progress</span><span style="color:var(--primary);font-weight:500">68%</span></div>
+</div>
+<div class="card">
+<div class="card-header"><span class="card-title">Milestones</span><button class="btn btn-secondary btn-sm" onclick="openModal('milestone-modal')"><i class="ti ti-plus" aria-hidden="true"></i>Add</button></div>
+<div class="milestone-item"><div class="milestone-check done"><i class="ti ti-check" aria-hidden="true"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Literature Review</div><div style="font-size:11px;color:var(--text-3)">Completed Feb 28, 2024</div></div><span class="badge badge-green">Done</span></div>
+<div class="milestone-item"><div class="milestone-check done"><i class="ti ti-check" aria-hidden="true"></i></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Research Proposal</div><div style="font-size:11px;color:var(--text-3)">Completed Apr 10, 2024</div></div><span class="badge badge-green">Done</span></div>
+<div class="milestone-item"><div class="milestone-check"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Data Collection Phase 1</div><div style="font-size:11px;color:var(--text-3)">Due Jul 30, 2025</div></div><span class="badge badge-amber">Pending</span></div>
+<div class="milestone-item"><div class="milestone-check"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Data Analysis</div><div style="font-size:11px;color:var(--text-3)">Due Sep 30, 2025</div></div><span class="badge badge-blue">Upcoming</span></div>
+<div class="milestone-item"><div class="milestone-check"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Final Report</div><div style="font-size:11px;color:var(--text-3)">Due Dec 15, 2025</div></div><span class="badge badge-blue">Upcoming</span></div>
+</div>
+</div>
+<div class="detail-side">
+<div class="card">
+<div class="card-header"><span class="card-title">Team</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:#7e22ce">SC</div><div><div style="font-size:12px;font-weight:500">Dr. Sarah Chen</div><span class="role-supervisor" style="font-size:10px;padding:1px 6px;border-radius:4px">Supervisor</span></div></div>
+<div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:#0f766e">MR</div><div><div style="font-size:12px;font-weight:500">Marco Rossi</div><span class="role-researcher" style="font-size:10px;padding:1px 6px;border-radius:4px">Researcher</span></div></div>
+<div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:#b45309">AK</div><div><div style="font-size:12px;font-weight:500">Ayesha Khan</div><span class="role-researcher" style="font-size:10px;padding:1px 6px;border-radius:4px">Researcher</span></div></div>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="card-title">Documents</span></div>
+<div class="doc-item"><div class="doc-icon"><i class="ti ti-file-text" aria-hidden="true"></i></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">research_proposal_v2.pdf</div><div style="font-size:10px;color:var(--text-3)">PDF · 2.4 MB</div></div><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button></div>
+<div class="doc-item"><div class="doc-icon"><i class="ti ti-table" aria-hidden="true"></i></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">data_collection_template.xlsx</div><div style="font-size:10px;color:var(--text-3)">XLSX · 840 KB</div></div><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MILESTONES -->
+<div class="page" id="page-milestones">
+<div class="page-header">
+<div><div class="page-title">Milestones</div><div class="page-sub">Track progress across all projects.</div></div>
+<button class="btn btn-primary" onclick="openModal('milestone-modal')"><i class="ti ti-plus" aria-hidden="true"></i>Add milestone</button>
+</div>
+<div class="card" style="margin-bottom:12px">
+<div style="display:flex;gap:8px">
+<select style="width:auto"><option>All projects</option><option>Climate Study</option><option>AI Ethics</option><option>Quantum Computing</option></select>
+<select style="width:auto"><option>All statuses</option><option>Completed</option><option>Pending</option><option>Upcoming</option><option>Overdue</option></select>
+</div>
+</div>
+<div class="card">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Milestone</th><th>Project</th><th>Due date</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:500">Literature Review Complete</td><td style="font-size:12px;color:var(--text-2)">Climate Change Study</td><td style="font-size:12px">Feb 28, 2024</td><td><span class="badge badge-green">Completed</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td style="font-weight:500">Research Proposal Submitted</td><td style="font-size:12px;color:var(--text-2)">Climate Change Study</td><td style="font-size:12px">Apr 10, 2024</td><td><span class="badge badge-green">Completed</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td style="font-weight:500">Survey Data Collection</td><td style="font-size:12px;color:var(--text-2)">Climate Change Study</td><td style="font-size:12px">Jul 30, 2025</td><td><span class="badge badge-amber">Pending</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td style="font-weight:500">Ethics Board Approval</td><td style="font-size:12px;color:var(--text-2)">AI Ethics in Healthcare</td><td style="font-size:12px">Aug 15, 2025</td><td><span class="badge badge-amber">Pending</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td style="font-weight:500">Data Analysis Complete</td><td style="font-size:12px;color:var(--text-2)">Climate Change Study</td><td style="font-size:12px">Sep 30, 2025</td><td><span class="badge badge-blue">Upcoming</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td style="font-weight:500">Prototype Demo</td><td style="font-size:12px;color:var(--text-2)">Quantum Computing</td><td style="font-size:12px">Nov 1, 2025</td><td><span class="badge badge-red">Overdue</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- DOCUMENTS -->
+<div class="page" id="page-documents">
+<div class="page-header">
+<div><div class="page-title">Documents</div><div class="page-sub">Upload and manage research documents.</div></div>
+<button class="btn btn-primary" onclick="openModal('doc-modal')"><i class="ti ti-upload" aria-hidden="true"></i>Upload</button>
+</div>
+<div class="card" style="margin-bottom:12px">
+<div class="upload-zone" onclick="showToast('File picker would open here')">
+<i class="ti ti-cloud-upload" style="font-size:28px;color:var(--text-3);display:block;margin-bottom:8px" aria-hidden="true"></i>
+<div style="font-size:13px;font-weight:500">Drop files here or click to upload</div>
+<div style="font-size:12px;color:var(--text-3);margin-top:4px">PDF, DOCX, XLSX, PPTX up to 50 MB</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><span class="card-title">All documents</span>
+<select style="width:auto"><option>All types</option><option>PDF</option><option>DOCX</option><option>XLSX</option></select>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Name</th><th>Project</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Actions</th></tr></thead>
+<tbody>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="doc-icon" style="width:24px;height:24px"><i class="ti ti-file-text" style="font-size:12px" aria-hidden="true"></i></div>research_proposal_v2.pdf</div></td><td style="font-size:12px;color:var(--text-2)">Climate Study</td><td><span class="badge badge-red" style="font-size:9px">PDF</span></td><td style="font-size:12px">2.4 MB</td><td style="font-size:12px">Jun 12, 2025</td><td><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="doc-icon" style="width:24px;height:24px;background:#dcfce7"><i class="ti ti-table" style="font-size:12px;color:var(--success)" aria-hidden="true"></i></div>data_collection_template.xlsx</div></td><td style="font-size:12px;color:var(--text-2)">Climate Study</td><td><span class="badge badge-green" style="font-size:9px">XLSX</span></td><td style="font-size:12px">840 KB</td><td style="font-size:12px">May 8, 2025</td><td><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="doc-icon" style="width:24px;height:24px;background:#f3e8ff"><i class="ti ti-file" style="font-size:12px;color:#7e22ce" aria-hidden="true"></i></div>ethics_framework.docx</div></td><td style="font-size:12px;color:var(--text-2)">AI Ethics</td><td><span class="badge badge-purple" style="font-size:9px">DOCX</span></td><td style="font-size:12px">1.1 MB</td><td style="font-size:12px">Apr 20, 2025</td><td><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="doc-icon" style="width:24px;height:24px"><i class="ti ti-file-text" style="font-size:12px" aria-hidden="true"></i></div>quantum_lit_review.pdf</div></td><td style="font-size:12px;color:var(--text-2)">Quantum Computing</td><td><span class="badge badge-red" style="font-size:9px">PDF</span></td><td style="font-size:12px">4.7 MB</td><td style="font-size:12px">Mar 3, 2025</td><td><button class="action-btn"><i class="ti ti-download" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+<div class="page-header">
+<div><div class="page-title">Admin panel</div><div class="page-sub">System management and user access control.</div></div>
+</div>
+<div class="admin-grid">
+<div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">48</div></div>
+<div class="stat-card"><div class="stat-label">Active Sessions</div><div class="stat-value">12</div></div>
+<div class="stat-card"><div class="stat-label">System Uptime</div><div class="stat-value">99.8%</div></div>
+</div>
+<div class="card">
+<div class="card-header"><span class="card-title">User management</span><button class="btn btn-primary btn-sm" onclick="openModal('user-modal')"><i class="ti ti-plus" aria-hidden="true"></i>Add user</button></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px">AD</div>Admin User</div></td><td style="font-size:12px">admin@uni.edu</td><td><span class="role-admin role-badge">ADMIN</span></td><td><span class="badge badge-green">Active</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#7e22ce">SC</div>Dr. Sarah Chen</div></td><td style="font-size:12px">s.chen@uni.edu</td><td><span class="role-supervisor role-badge">SUPERVISOR</span></td><td><span class="badge badge-green">Active</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#0f766e">MR</div>Marco Rossi</div></td><td style="font-size:12px">m.rossi@uni.edu</td><td><span class="role-researcher role-badge">RESEARCHER</span></td><td><span class="badge badge-green">Active</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#b45309">JW</div>Prof. James Wu</div></td><td style="font-size:12px">j.wu@uni.edu</td><td><span class="role-supervisor role-badge">SUPERVISOR</span></td><td><span class="badge badge-amber">Inactive</span></td><td><button class="action-btn"><i class="ti ti-edit" aria-hidden="true"></i></button><button class="action-btn del"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div><!-- content-area -->
+</div><!-- main -->
+</div><!-- app -->
+
+<!-- MODALS -->
+<div id="project-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('project-modal')">
+<div class="modal">
+<div class="modal-header"><span class="modal-title">New project</span><button class="action-btn" onclick="closeModal('project-modal')"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+<div class="modal-body">
+<div class="form-group"><label>Project title</label><input type="text" placeholder="e.g. Climate Impact Assessment 2026"></div>
+<div class="form-group"><label>Description</label><textarea placeholder="Brief overview of the research project…"></textarea></div>
+<div class="form-group"><label>Supervisor</label><select><option>Dr. Sarah Chen</option><option>Prof. James Wu</option><option>Dr. Alicia Park</option><option>Dr. Marcus Lee</option></select></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="form-group"><label>Start date</label><input type="date"></div>
+<div class="form-group"><label>End date</label><input type="date"></div>
+</div>
+<div class="form-group"><label>Status</label><select><option>Planning</option><option>Active</option><option>In Review</option><option>Completed</option></select></div>
+<div class="form-group"><label>Department / Tags</label><input type="text" placeholder="e.g. Environmental Science, Field Study"></div>
+</div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('project-modal')">Cancel</button><button class="btn btn-primary" onclick="saveProject()">Create project</button></div>
+</div>
+</div>
+</div>
+
+<div id="milestone-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('milestone-modal')">
+<div class="modal">
+<div class="modal-header"><span class="modal-title">Add milestone</span><button class="action-btn" onclick="closeModal('milestone-modal')"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+<div class="modal-body">
+<div class="form-group"><label>Title</label><input type="text" placeholder="e.g. Data Collection Phase 2"></div>
+<div class="form-group"><label>Project</label><select><option>Climate Change Study</option><option>AI Ethics</option><option>Quantum Computing</option></select></div>
+<div class="form-group"><label>Due date</label><input type="date"></div>
+<div class="form-group"><label>Description</label><textarea placeholder="Describe what needs to be achieved…"></textarea></div>
+<div class="form-group"><label>Status</label><select><option>Upcoming</option><option>Pending</option><option>Completed</option></select></div>
+</div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('milestone-modal')">Cancel</button><button class="btn btn-primary" onclick="saveMilestone()">Add milestone</button></div>
+</div>
+</div>
+</div>
+
+<div id="doc-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('doc-modal')">
+<div class="modal">
+<div class="modal-header"><span class="modal-title">Upload document</span><button class="action-btn" onclick="closeModal('doc-modal')"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+<div class="modal-body">
+<div class="form-group"><label>Project</label><select><option>Climate Change Study</option><option>AI Ethics</option><option>Quantum Computing</option></select></div>
+<div class="upload-zone" style="margin-bottom:14px" onclick="showToast('File picker would open here')">
+<i class="ti ti-upload" style="font-size:24px;color:var(--text-3);display:block;margin-bottom:6px" aria-hidden="true"></i>
+<div style="font-size:13px">Click to select a file</div>
+<div style="font-size:11px;color:var(--text-3)">Max 50 MB</div>
+</div>
+<div class="form-group"><label>Description (optional)</label><textarea placeholder="Brief note about this document…" style="min-height:50px"></textarea></div>
+</div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('doc-modal')">Cancel</button><button class="btn btn-primary" onclick="saveDoc()">Upload</button></div>
+</div>
+</div>
+</div>
+
+<div id="user-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('user-modal')">
+<div class="modal">
+<div class="modal-header"><span class="modal-title">Add user</span><button class="action-btn" onclick="closeModal('user-modal')"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+<div class="modal-body">
+<div class="form-group"><label>Full name</label><input type="text" placeholder="Dr. First Last"></div>
+<div class="form-group"><label>Email</label><input type="email" placeholder="name@institution.edu"></div>
+<div class="form-group"><label>Role</label><select><option>RESEARCHER</option><option>SUPERVISOR</option><option>ADMIN</option></select></div>
+<div class="form-group"><label>Temporary password</label><input type="password" placeholder="Min. 8 characters"></div>
+</div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('user-modal')">Cancel</button><button class="btn btn-primary" onclick="saveUser()">Create user</button></div>
+</div>
+</div>
+</div>
+
+<div id="edit-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('edit-modal')">
+<div class="modal">
+<div class="modal-header"><span class="modal-title">Edit project</span><button class="action-btn" onclick="closeModal('edit-modal')"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+<div class="modal-body">
+<div class="form-group"><label>Project title</label><input type="text" value="Climate Change Impact Study"></div>
+<div class="form-group"><label>Status</label><select><option>Planning</option><option selected>Active</option><option>In Review</option><option>Completed</option></select></div>
+<div class="form-group"><label>Progress (%)</label><input type="text" value="68"></div>
+<div class="form-group"><label>End date</label><input type="date" value="2025-12-31"></div>
+</div>
+<div class="modal-footer"><button class="btn btn-danger btn-sm" onclick="closeModal('edit-modal');showToast('Project deleted')">Delete</button><div style="flex:1"></div><button class="btn btn-secondary" onclick="closeModal('edit-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEdit()">Save changes</button></div>
+</div>
+</div>
+</div>
+
+<div id="delete-modal" style="display:none">
+<div class="modal-overlay" onclick="if(event.target===this)closeModal('delete-modal')">
+<div class="modal" style="width:360px">
+<div class="modal-header"><span class="modal-title">Delete project</span></div>
+<div class="modal-body">
+<p style="font-size:13px;color:var(--text-2)">Are you sure you want to delete <strong>Climate Change Impact Study</strong>? This will permanently remove all milestones and documents associated with this project.</p>
+</div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button><button class="btn btn-danger" onclick="closeModal('delete-modal');showToast('Project deleted')">Delete project</button></div>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast"><i class="ti ti-check" aria-hidden="true"></i><span id="toast-msg"></span></div>
+
+</div>
+
+<script>
+var currentRole='ADMIN';
+var notifOpen=false;
+
+function doLogin(){
+var email=document.getElementById('login-email').value;
+var pass=document.getElementById('login-password').value;
+var role=document.getElementById('login-role').value;
+var err=document.getElementById('auth-error');
+if(!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
+if(pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
+var btn=document.querySelector('#login-form .btn-primary');
+btn.innerHTML='<span class="spinner"></span>';
+setTimeout(function(){
+currentRole=role;
+document.getElementById('auth-screen').style.display='none';
+document.getElementById('main-app').style.display='block';
+var names={ADMIN:'Admin User',SUPERVISOR:'Dr. Sarah Chen',RESEARCHER:'Marco Rossi'};
+var roles={ADMIN:'Administrator',SUPERVISOR:'Supervisor',RESEARCHER:'Researcher'};
+var inits={ADMIN:'AD',SUPERVISOR:'SC',RESEARCHER:'MR'};
+document.getElementById('user-display').textContent=names[role];
+document.getElementById('user-role-display').textContent=roles[role];
+document.getElementById('user-avatar').textContent=inits[role];
+document.getElementById('admin-nav').style.display=role==='ADMIN'?'block':'none';
+btn.innerHTML='<span id="login-btn-text">Sign in</span>';
+showToast('Signed in — JWT stored');
+},900);
+}
+
+function doRegister(){
+showToast('Account created! Please sign in.');
+toggleAuth('login');
+}
+
+function doLogout(){
+document.getElementById('main-app').style.display='none';
+document.getElementById('auth-screen').style.display='block';
+showToast('Signed out — token cleared');
+}
+
+function toggleAuth(mode){
+document.getElementById('login-form').style.display=mode==='login'?'block':'none';
+document.getElementById('register-form').style.display=mode==='register'?'block':'none';
+document.getElementById('auth-error').style.display='none';
+}
+
+function nav(page,el){
+document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+var pg=document.getElementById('page-'+page);
+if(pg)pg.classList.add('active');
+if(el)el.classList.add('active');
+var titles={dashboard:'Dashboard',projects:'Projects',milestones:'Milestones',documents:'Documents','project-detail':'Project Detail',admin:'Admin Panel'};
+document.getElementById('header-title').textContent=titles[page]||page;
+notifOpen=false;document.getElementById('notif-panel').style.display='none';
+}
+
+function showProjectDetail(){
+document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+document.getElementById('page-project-detail').classList.add('active');
+document.getElementById('header-title').textContent='Project Detail';
+}
+
+function openModal(id){
+document.getElementById(id).style.display='block';
+}
+function closeModal(id){
+document.getElementById(id).style.display='none';
+}
+
+function openEditModal(){openModal('edit-modal');}
+function confirmDelete(){openModal('delete-modal');}
+
+function saveProject(){closeModal('project-modal');showToast('Project created');}
+function saveMilestone(){closeModal('milestone-modal');showToast('Milestone added');}
+function saveDoc(){closeModal('doc-modal');showToast('Document uploaded');}
+function saveUser(){closeModal('user-modal');showToast('User created');}
+function saveEdit(){closeModal('edit-modal');showToast('Changes saved');}
+
+function showToast(msg){
+var t=document.getElementById('toast');
+document.getElementById('toast-msg').textContent=msg;
+t.classList.add('show');
+setTimeout(function(){t.classList.remove('show')},2500);
+}
+
+function toggleSidebar(){
+document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function toggleNotif(){
+notifOpen=!notifOpen;
+document.getElementById('notif-panel').style.display=notifOpen?'block':'none';
+}
+
+function filterProjects(val){showToast('Filtered: '+(val||'all statuses'));}
+
+document.addEventListener('click',function(e){
+if(notifOpen&&!e.target.closest('#notif-panel')&&!e.target.closest('[onclick="toggleNotif()"]')){
+notifOpen=false;document.getElementById('notif-panel').style.display='none';
+}
+});
+</script>
